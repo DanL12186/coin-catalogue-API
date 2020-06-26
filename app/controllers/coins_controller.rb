@@ -17,8 +17,8 @@ class CoinsController < ApplicationController
 
   #returns a subset of coins based on query params
   def filter_coins
-    result = Coin.select(:year, :mintmark, :denomination, :category, :mintage, :generic_img_url, :metal_composition, :pcgs_num, :id)
-                 .where(coin_params)
+    result = Coin.select(:year, :mintmark, :denomination, :category, :mintage, :generic_img_url, :metal_composition, :pcgs_num, :id, :series)
+                 .where(coin_params.reject { | _, v | v.empty? })
     
     #render json: CoinSerializer.new(result, { fields: { coin: [:year, :mintmark] } })
     if result.empty?
