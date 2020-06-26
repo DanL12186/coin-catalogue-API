@@ -3,7 +3,7 @@ class CoinsController < ApplicationController
   def show
     # year, mintmark = params[:year_and_mintmark].split('-')
     year = params[:year_and_mintmark].to_i
-    mintmark = params[:year_and_mintmark].match(/[SDOP]|C{1,2}$/i).to_s.upcase
+    mintmark = params[:year_and_mintmark].match(/(?<=\-)\D+$/i).to_s.titlecase
     mintmark = nil if mintmark.empty?
 
     coin = Coin.find_by(year: year, mintmark: mintmark, denomination: params[:denomination])
