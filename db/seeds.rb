@@ -50,16 +50,23 @@ def add_pcgs_pop_to_coins(url)
 
     pcgs_num, description = row
     
-    next unless description && !description.match?(/PL$/)
+    next unless description && !description.match?(/(PL|PR)$/)
 
     total_pcgs_population = row[-1].split[-1]&.delete(',').to_i
-    denomination          = description.match(/\$\d{1,2}/).to_s
+    denomination          = description.match(/\$\d{1,2}(\.\d+)*/).to_s
     year                  = description.match(/^\d{4}/).to_s
 
     #future mintmark, when special_designation is in place
     #mintmark = description.match(/\d{4}-[A-Z]/).to_s
 
-    mintmark = description.sub(denomination, "").sub(year, '').sub(/^-/,'').gsub(/\s+/, ' ').sub(/\d+ to \d+ known/, '').strip
+    mintmark = description.sub(denomination, '')
+                          .sub(year, '')
+                          .sub(' G', '')
+                          .sub(/^-/,'')
+                          .gsub(/\s+/, ' ')
+                          .sub(/(\d+ to|about|under|less than) \d+ known/, '')
+                          .strip
+
     mintmark = nil if mintmark.empty?
 
     population_by_condition = { 
