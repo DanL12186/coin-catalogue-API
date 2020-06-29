@@ -52,7 +52,7 @@ def add_pcgs_pop_to_coins(url)
     
     next unless description && !description.match?(/PL$/)
 
-    total_pcgs_population = row[-1].split[-1].to_i
+    total_pcgs_population = row[-1].split[-1]&.delete(',').to_i
     denomination          = description.match(/\$\d{1,2}/).to_s
     year                  = description.match(/^\d{4}/).to_s
 
