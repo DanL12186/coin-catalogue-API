@@ -50,7 +50,7 @@ def add_pcgs_pop_to_coins(url)
 
     pcgs_num, description = row
     
-    next unless description 
+    next unless description && !description.match?(/PL$/)
 
     total_pcgs_population = row[-1].split[-1].to_i
     denomination          = description.match(/\$\d{1,2}/).to_s
@@ -90,7 +90,7 @@ def add_pcgs_pop_to_coins(url)
     next unless tr.children.css('td')[3]
 
     tr.children.css('td')[3..-1].each_with_index do | td, idx | 
-      pop_at_grade = td.css('div').first&.text&.to_i
+      pop_at_grade = td.css('div').first&.text&.delete(',')&.to_i
 
       grade = grade_array[idx]
 
