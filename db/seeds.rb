@@ -21,7 +21,7 @@ def create_coin_series(page, category, designer, denomination, series, generic_i
       year = year_and_mintmark.match(/^\d{4}/).to_s
       mintmark = year_and_mintmark.sub(year, "").sub(/^-/, '').strip
       mintmark = nil if mintmark.empty?
-
+     
       Coin.create(
                   pcgs_num: pcgs_num.to_i, 
                   year: year.to_i, 
@@ -37,8 +37,10 @@ def create_coin_series(page, category, designer, denomination, series, generic_i
       )
     end
   end
+  nil
 end
 
+#URL, e.g. https://www.pcgs.com/pop/detail/classic-head-2-5-1834-1839/757/0?t=5&pn=1; choose "Comprehensive", view "all"
 #currently only doing the first few
 def add_pcgs_pop_to_coins(url)
   page = scrape_page(url)
@@ -53,7 +55,7 @@ def add_pcgs_pop_to_coins(url)
     next unless description && !description.match?(/(PL|PR)$/)
 
     total_pcgs_population = row[-1].split[-1]&.delete(',').to_i
-    denomination          = description.match(/\$\d{1,2}(\.\d+)*/).to_s
+    denomination          = description.match(/\$\d{1,2}(\.\d+)*|\d{1,2}C/).to_s
     year                  = description.match(/^\d{4}/).to_s
 
     #future mintmark, when special_designation is in place
