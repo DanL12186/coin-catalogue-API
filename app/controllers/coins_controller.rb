@@ -10,7 +10,7 @@ class CoinsController < ApplicationController
     coin = Coin.find_by(year: year, mintmark: mintmark, denomination: params[:denomination])
     # binding.pry
     if coin
-      render json: coin
+      render json: CoinSerializer.new(coin).serializable_hash[:data][:attributes]
     else
       render status: 404
     end
@@ -18,14 +18,14 @@ class CoinsController < ApplicationController
 
   #returns a subset of coins based on query params
   def filter_coins
-    result = Coin.select(:year, :mintmark, :denomination, :category, :mintage, :generic_img_url, :metal_composition, :pcgs_num, :id, :series, :designer, :pcgs_population)
+    result = Coin.select(:year, :mintmark, :denomination, :mintage, :series, :pcgs_population)
                  .where(coin_params.reject { | _, v | v.empty? })
     
     #render json: CoinSerializer.new(result, { fields: { coin: [:year, :mintmark] } })
     if result.empty?
       render status: 404
     else
-      render json: CoinSerializer.new(result).serializable_hash[:data].map! { | coin | coin[:attributes] }
+      render json: MultiCoinSerializer.new(result).serializable_hash[:data].map! { | coin | coin[:attributes] }
     end
   end
 
