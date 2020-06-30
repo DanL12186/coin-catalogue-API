@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_06_28_011732) do
+ActiveRecord::Schema.define(version: 2020_06_30_181515) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -40,7 +40,8 @@ ActiveRecord::Schema.define(version: 2020_06_28_011732) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.json "pcgs_population", default: {}
-    t.string "special_designation"
+    t.string "special_designation", default: "", null: false
+    t.index ["series", "year", "mintmark", "special_designation"], name: "index_coins_on_series_year_mintmark_and_special_designation", unique: true
   end
 
 end
