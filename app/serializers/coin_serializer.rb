@@ -11,5 +11,6 @@ class CoinSerializer
              :pcgs_population,
              :denomination,
              :diameter,
-             :metal_composition
+             :metal_composition,
+             :mass
 end
