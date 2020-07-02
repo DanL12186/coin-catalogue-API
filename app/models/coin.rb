@@ -36,27 +36,4 @@ class Coin < ApplicationRecord
     #self.surface_area / square_density * self.mass    
   end
 
-  def melt_value
-    return 0 if self.metal == "other"
-
-    #later store/retrieve this programmatically
-    price_per_ounce = { 
-      'silver' => 17.25, 
-      'gold' => 1707.97
-    }
-
-    weight_in_ounces = (self.mass / 31.1035).round(6)
-    purity = self.metal_composition[self.metal] / 100.0
-    value = weight_in_ounces * purity * price_per_ounce[self.metal]
-
-    value.round(2)
-  end
-
-  def metal
-    return "gold" if self.metal_composition['gold']
-    return "silver" if self.metal_composition['silver']
-    
-    'other'
-  end
-
 end
