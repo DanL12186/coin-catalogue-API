@@ -1,9 +1,8 @@
 class MultiCoinSerializer
   include JSONAPI::Serializer
-  attributes :year, :mintmark, :denomination, :mintage, :series
+  attributes :year, :mintmark, :denomination, :mintage, :series, :special_designation
 
-  attribute :pcgs_total do | coin |
+  attributes :pcgs_total do | coin |
     coin.pcgs_population['total']
   end
-
 end
