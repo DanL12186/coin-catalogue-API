@@ -10,18 +10,26 @@ end
 #get the series later; e.g. Liberty Head $10, not just $10 Eagles
 #https://www.pcgs.com/coinfacts/coin/1850-20/8902/rarity/series
 #creates coins from PCGS site. page = scraped page, designer e.g. "Augustus St. Gauden", category e.g. "Double Eagles", denomination e.g. '$5', '50C'
-def create_coin_series(page, category, designer, denomination, series, generic_img_url, diameter = nil, mass = nil)
-  denomination = "$2.50" if denomination == "$2.5"
+def create_coin_series(url, category, designer, generic_img_url, diameter = nil, mass = nil)
+  year_and_mintmark_pattern = /^\d{4}(-(CC|C|D|O|S))*/
 
+  page = scrape_page(url)
+  denomination = page.css('#TableRarity td')[1]
+                     .text
+                     .match(/\$(1|2\.50|5|3|4|10|20)|\s(50|25|10|5|1)C/)
+                     .to_s
+                     .strip
+                     
   Coin.transaction do
     page.css('tbody tr').each do | tr | 
+      series = page.css('ul.breadcrumb-list li a.text-muted').children[3].text
       pcgs_num, year_and_mintmark, mintage = tr.text.gsub("\r\n", '').strip.split(/\s\s+/).first(3)
-      
+
       year_and_mintmark.gsub!(" #{denomination}", '').sub!('G$1', '')
-      year = year_and_mintmark.match(/^\d{4}/).to_s
-      mintmark = year_and_mintmark.sub(year, "").sub(/^-/, '').strip
-      mintmark = nil if mintmark.empty?
-     
+      #P occurs in a very few nickels, W for 21st century proof silver
+      year, mintmark      = year_and_mintmark.match(year_and_mintmark_pattern).to_s.split('-')
+      special_designation = year_and_mintmark.sub(year_and_mintmark_pattern, '').strip
+
       Coin.create(
                   pcgs_num: pcgs_num.to_i, 
                   year: year.to_i, 
@@ -32,6 +40,7 @@ def create_coin_series(page, category, designer, denomination, series, generic_i
                   denomination: denomination,
                   series: series, 
                   generic_img_url: generic_img_url, 
+                  special_designation: special_designation,
                   diameter: diameter,
                   mass: mass
       )
@@ -41,7 +50,7 @@ def create_coin_series(page, category, designer, denomination, series, generic_i
 end
 
 #URL, e.g. https://www.pcgs.com/pop/detail/classic-head-2-5-1834-1839/757/0?t=5&pn=1; choose "Comprehensive", view "all"
-#currently only doing the first few
+#needs to be refactored now that special designation exists
 def add_pcgs_pop_to_coins(url)
   page = scrape_page(url)
 
@@ -119,30 +128,3 @@ def add_pcgs_pop_to_coins(url)
   end
   nil
 end
-
-# def test_create_coin_series(page, category, designer, denomination, series, generic_img_url, diameter)
-#   denomination = "$2.50" if denomination == "$2.5"
-
-  
-#     page.css('tbody tr').each do | tr | 
-#       pcgs_num, year_and_mintmark, mintage = tr.text.gsub("\r\n", '').strip.split(/\s\s+/).first(3)
-      
-#       year_and_mintmark.gsub!(" #{denomination}", '').sub!('G$1', '')
-#       year, mintmark = year_and_mintmark.split('-')
-
-#       coin = Coin.new(pcgs_num: pcgs_num.to_i, 
-#                       year: year.to_i, 
-#                       mintmark: mintmark,
-#                       mintage: mintage.to_i,
-#                       category: category,
-#                       designer: designer,
-#                       denomination: denomination,
-#                       series: series, 
-#                       generic_img_url: generic_img_url, 
-#                       diameter: diameter
-#                     )
-                    
-#       puts coin.inspect
-#     end
-  
-# end
