@@ -1,14 +1,15 @@
 class CoinsController < ApplicationController
 
   def show
-    # year, mintmark = params[:year_and_mintmark].split('-')
-    year = params[:year_and_mintmark].to_i
-    mintmark = params[:year_and_mintmark].match(/(?<=\-)\D+\d*$/i).to_s.titlecase
-    mintmark = "CC" if mintmark.match?(/^cc/i)
-    mintmark = nil if mintmark.empty?
+    mintmark = params[:mintmark].upcase unless params[:mintmark].empty?
+    
+    coin = Coin.find_by(
+      year: params[:year], 
+      mintmark: mintmark, 
+      denomination: params[:denomination], 
+      special_designation: params[:special_designation]
+    )
 
-    coin = Coin.find_by(year: year, mintmark: mintmark, denomination: params[:denomination])
-    # binding.pry
     if coin
       render json: CoinSerializer.new(coin).serializable_hash[:data][:attributes]
     else
