@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_06_30_181515) do
+ActiveRecord::Schema.define(version: 2020_07_01_010556) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -42,6 +42,19 @@ ActiveRecord::Schema.define(version: 2020_06_30_181515) do
     t.json "pcgs_population", default: {}
     t.string "special_designation", default: "", null: false
     t.index ["series", "year", "mintmark", "special_designation"], name: "index_coins_on_series_year_mintmark_and_special_designation", unique: true
+  end
+
+  create_table "series", force: :cascade do |t|
+    t.integer "designer_id"
+    t.string "name", null: false
+    t.string "generic_img_url"
+    t.string "date_range"
+    t.float "mass"
+    t.float "diameter"
+    t.json "metal_composition"
+    t.text "comments"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
 end
