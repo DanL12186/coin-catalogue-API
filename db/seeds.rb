@@ -14,6 +14,8 @@ def create_coin_series(url, category, designer, generic_img_url, diameter = nil,
   year_and_mintmark_pattern = /^\d{4}(-(CC|C|D|O|S))*/
 
   page = scrape_page(url)
+
+  #oops? page.css('whatever').match(/\$\d{1,2}(\.\d+)*|\d{1,2}C/).to_s
   denomination = page.css('#TableRarity td')[1]
                      .text
                      .match(/\$(1|2\.50|5|3|4|10|20)|\s(50|25|10|5|1)C/)
@@ -27,6 +29,7 @@ def create_coin_series(url, category, designer, generic_img_url, diameter = nil,
 
       year_and_mintmark.gsub!(" #{denomination}", '').sub!('G$1', '')
       #P occurs in a very few nickels, W for 21st century proof silver
+      #year_and_mintmark_pattern will fail on overdates like 1879/8-CC etc. fix later - possibly .sub('/', " Over ").strip
       year, mintmark      = year_and_mintmark.match(year_and_mintmark_pattern).to_s.split('-')
       special_designation = year_and_mintmark.sub(year_and_mintmark_pattern, '').strip
 
@@ -61,7 +64,7 @@ def add_pcgs_pop_to_coins(url)
 
     pcgs_num, description = row
     
-    next unless description && !description.match?(/(PL|PR)$/)
+    next unless description && !description.match?(/(PL|PR|SP)$/)
 
     total_pcgs_population = row[-1].split[-1]&.delete(',').to_i
     denomination          = description.match(/\$\d{1,2}(\.\d+)*|\d{1,2}C/).to_s
@@ -69,14 +72,16 @@ def add_pcgs_pop_to_coins(url)
 
     #future mintmark, when special_designation is in place
     #mintmark = description.match(/\d{4}-[A-Z]/).to_s
+    mintmark = description.match(/-(CC|C|D|O|S)(?=\s)/).to_s.sub('-', '')
 
-    mintmark = description.sub(denomination, '')
-                          .sub(year, '')
-                          .sub(' G', '')
-                          .sub(/^-/,'')
-                          .gsub(/\s+/, ' ')
-                          .sub(/(\d+ to|about|under|less than) \d+ known/, '')
-                          .strip
+    special_designation = description.sub(denomination, '')
+                                     .sub("-#{mintmark}", '')
+                                     .sub(year, '')
+                                     .sub(' G', '')
+                                     .gsub(/\s+/, ' ')
+                                     .sub(/(\d+ to|about|under|less than|Est\.) \d+ known/, '')
+                                     .sub(/\d+ known/, '')
+                                     .strip
 
     mintmark = nil if mintmark.empty?
 
@@ -117,7 +122,7 @@ def add_pcgs_pop_to_coins(url)
 
     population_by_condition[:total] = total_pcgs_population
 
-    coin = Coin.find_by(year: year, denomination: denomination, mintmark: mintmark)
+    coin = Coin.find_by(year: year, denomination: denomination, mintmark: mintmark, special_designation: special_designation)
 
     unless coin
       puts "failed to get population data for #{denomination} #{year} #{mintmark}"
