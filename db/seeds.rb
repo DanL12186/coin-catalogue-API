@@ -1,15 +1,11 @@
 require 'open-uri'
 
-#get page with nokogiri + openuri eg page = Nokogiri::HTML(URI.open("https://www.pcgs.com/coinfacts/coin/1850-20/8902/rarity/series"))
-#can scrape PCGS population from here ($5 gold example).. but need to work out kinks https://www.pcgs.com/pop/detail/category/61?l=liberty-head-5-1839-1908&ccid=0&t=5&p=MS&pn=1&ps=-1
-
 def scrape_page(url)
   Nokogiri::HTML(URI.open(url))
 end
 
-# get the series later; e.g. Liberty Head $10, not just $10 Eagles
-# https://www.pcgs.com/coinfacts/coin/1850-20/8902/rarity/series
-# creates coins from PCGS site. page = scraped page, designer e.g. "Augustus St. Gauden", category e.g. "Double Eagles", denomination e.g. '$5', '50C'
+# url, e.g.: https://www.pcgs.com/coinfacts/coin/1850-20/8902/rarity/series
+# creates coins from PCGS site. designer e.g. "Augustus St. Gauden", category e.g. "Double Eagles", denomination e.g. '$5', '50C'
 def create_coin_series(url, category, designer, generic_img_url, diameter = nil, mass = nil)
   year_and_mintmark_pattern = /^\d{4}(-(CC|C|D|O|S))*/
 
@@ -63,13 +59,12 @@ def create_coin_series(url, category, designer, generic_img_url, diameter = nil,
 end
 
 #URL, e.g. https://www.pcgs.com/pop/detail/classic-head-2-5-1834-1839/757/0?t=5&pn=1; choose "Comprehensive", view "all"
-#needs to be refactored now that special designation exists
 def add_pcgs_pop_to_coins(url)
   page = scrape_page(url)
 
   page.css('tbody tr')[3..-1].each do | tr |
-    row = tr.text.gsub("\r\n",'').gsub(/\s+|Shop|MS|\+/, ' ').strip.split(/\s\s+/);
-    
+    row = tr.text.gsub("\r\n",'').gsub(/\s+|Shop|MS|\+/, ' ').strip.split(/\s\s+/)
+
     next if row[0] == "Total"
 
     pcgs_num, description = row
@@ -78,17 +73,15 @@ def add_pcgs_pop_to_coins(url)
 
     total_pcgs_population = row[-1].split[-1]&.delete(',').to_i
     denomination          = description.match(/\$\d{1,2}(\.\d+)*|\d{1,2}C/).to_s
+    mintmark              = description.match(/-(CC|C|D|O|S)(?=\s)/).to_s.sub('-', '')
     year                  = description.match(/^\d{4}/).to_s
-
-    #future mintmark, when special_designation is in place
-    #mintmark = description.match(/\d{4}-[A-Z]/).to_s
-    mintmark = description.match(/-(CC|C|D|O|S)(?=\s)/).to_s.sub('-', '')
 
     special_designation = description.sub(denomination, '')
                                      .sub("-#{mintmark}", '')
                                      .sub(year, '')
                                      .sub(' G', '')
                                      .gsub(/\s+/, ' ')
+                                     .sub('/', ' Over ')
                                      .sub(/(\d+ to|about|under|less than|Est\.) \d+ known/, '')
                                      .sub(/\d+ known/, '')
                                      .strip
@@ -130,7 +123,7 @@ def add_pcgs_pop_to_coins(url)
       population_by_condition[grade] = pop_at_grade
     end
 
-    population_by_condition[:total] = total_pcgs_population
+    population_by_condition[:total] = total_pcgs_population || 0
 
     coin = Coin.find_by(year: year, denomination: denomination, mintmark: mintmark, special_designation: special_designation)
 
