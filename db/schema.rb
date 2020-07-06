@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_07_04_202413) do
+ActiveRecord::Schema.define(version: 2020_07_05_173022) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -44,6 +44,14 @@ ActiveRecord::Schema.define(version: 2020_07_04_202413) do
     t.index ["denomination", "year", "mintmark", "special_designation"], name: "index_coins_on_denomination_year_mintmark_and_designation", unique: true
   end
 
+  create_table "gold_and_silver_prices", force: :cascade do |t|
+    t.float "gold"
+    t.float "silver"
+    t.date "date_retrieved"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "series", force: :cascade do |t|
     t.integer "designer_id"
     t.string "name", null: false
@@ -55,6 +63,7 @@ ActiveRecord::Schema.define(version: 2020_07_04_202413) do
     t.text "comments"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "denomination", default: "", null: false
   end
 
 end
