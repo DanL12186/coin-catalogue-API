@@ -7,31 +7,29 @@ def scrape_page(url)
   Nokogiri::HTML(URI.open(url))
 end
 
-#get the series later; e.g. Liberty Head $10, not just $10 Eagles
-#https://www.pcgs.com/coinfacts/coin/1850-20/8902/rarity/series
-#creates coins from PCGS site. page = scraped page, designer e.g. "Augustus St. Gauden", category e.g. "Double Eagles", denomination e.g. '$5', '50C'
+# get the series later; e.g. Liberty Head $10, not just $10 Eagles
+# https://www.pcgs.com/coinfacts/coin/1850-20/8902/rarity/series
+# creates coins from PCGS site. page = scraped page, designer e.g. "Augustus St. Gauden", category e.g. "Double Eagles", denomination e.g. '$5', '50C'
 def create_coin_series(url, category, designer, generic_img_url, diameter = nil, mass = nil)
   year_and_mintmark_pattern = /^\d{4}(-(CC|C|D|O|S))*/
 
   page = scrape_page(url)
 
-  #oops? page.css('whatever').match(/\$\d{1,2}(\.\d+)*|\d{1,2}C/).to_s
   denomination = page.css('#TableRarity td')[1]
                      .text
-                     .match(/\$(1|2\.50|5|3|4|10|20)|\s(50|25|10|5|1)C/)
+                     .match(/\$\d{1,2}(\.\d+)*|\d{1,2}C/)
                      .to_s
-                     .strip
-                     
+  series = ''
+
   Coin.transaction do
     page.css('tbody tr').each do | tr | 
       series = page.css('ul.breadcrumb-list li a.text-muted').children[3].text
-      pcgs_num, year_and_mintmark, mintage = tr.text.gsub("\r\n", '').strip.split(/\s\s+/).first(3)
+      pcgs_num, year_mintmark_and_designation, mintage = tr.text.gsub("\r\n", '').strip.split(/\s{2,}/).first(3)
 
-      year_and_mintmark.gsub!(" #{denomination}", '').sub!('G$1', '')
-      #P occurs in a very few nickels, W for 21st century proof silver
+      year_mintmark_and_designation = year_mintmark_and_designation.sub(" #{denomination}", '').sub('G$1', '')
       #year_and_mintmark_pattern will fail on overdates like 1879/8-CC etc. fix later - possibly .sub('/', " Over ").strip
-      year, mintmark      = year_and_mintmark.match(year_and_mintmark_pattern).to_s.split('-')
-      special_designation = year_and_mintmark.sub(year_and_mintmark_pattern, '').strip
+      year, mintmark      = year_mintmark_and_designation.match(year_and_mintmark_pattern).to_s.split('-')
+      special_designation = year_mintmark_and_designation.sub(year_and_mintmark_pattern, '').sub("/", " Over ").strip
 
       Coin.create(
                   pcgs_num: pcgs_num.to_i, 
@@ -48,6 +46,18 @@ def create_coin_series(url, category, designer, generic_img_url, diameter = nil,
                   mass: mass
       )
     end
+  end
+
+  unless Series.find_by(name: series)
+    series_coin = Coin.last
+
+    Series.create(
+      name: series,
+      generic_img_url: series_coin.generic_img_url,
+      mass: series_coin.mass,
+      diameter: series_coin.diameter,
+      denomination: series_coin.denomination
+    )
   end
   nil
 end
