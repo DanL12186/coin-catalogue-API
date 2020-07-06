@@ -7,9 +7,5 @@ Rails.application.routes.draw do
   get '/series' => 'series#filter_series'
 
   get '/prices' => 'gold_and_silver_prices#prices'
-  
-  # get '/coins/:denomination' => 'coins#denomination'
-
-  # #doesn't work. not nested, maybe?
-  # get '/coins/:denomination/:year-and-mintmark' => 'coins#show'
+  get '/update_prices' => 'gold_and_silver_prices#update_prices'
 end
