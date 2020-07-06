@@ -1,7 +1,7 @@
 class CreateSeries < ActiveRecord::Migration[6.0]
   def change
     create_table :series do |t|
-      #denomination/category can be determined from series name
+      #category can be determined from series name
       t.integer :designer_id, foreign_key: true
       t.string :name, null: false, unique: true
 
