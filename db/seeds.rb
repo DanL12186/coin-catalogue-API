@@ -72,21 +72,6 @@ def add_pcgs_pop_to_coins(url)
     next unless description && !description.match?(/(PL|PR|SP)$/)
 
     total_pcgs_population = row[-1].split[-1]&.delete(',').to_i
-    denomination          = description.match(/\$\d{1,2}(\.\d+)*|\d{1,2}C/).to_s
-    mintmark              = description.match(/-(CC|C|D|O|S)(?=\s)/).to_s.sub('-', '')
-    year                  = description.match(/^\d{4}/).to_s
-
-    special_designation = description.sub(denomination, '')
-                                     .sub("-#{mintmark}", '')
-                                     .sub(year, '')
-                                     .sub(' G', '')
-                                     .gsub(/\s+/, ' ')
-                                     .sub('/', ' Over ')
-                                     .sub(/(\d+ to|about|under|less than|Est\.) \d+ known/, '')
-                                     .sub(/\d+ known/, '')
-                                     .strip
-
-    mintmark = nil if mintmark.empty?
 
     population_by_condition = { 
       VG: 0,
@@ -125,14 +110,13 @@ def add_pcgs_pop_to_coins(url)
 
     population_by_condition[:total] = total_pcgs_population || 0
 
-    coin = Coin.find_by(year: year, denomination: denomination, mintmark: mintmark, special_designation: special_designation)
+    coin = Coin.find_by(pcgs_num: pcgs_num)
 
-    unless coin
-      puts "failed to get population data for #{denomination} #{year} #{mintmark}"
-      next
+    if coin
+      coin.update(pcgs_population: population_by_condition)
+    else
+      puts "Couldn't find coin with PCGS ##{pcgs_num}"
     end
-
-    coin.update(pcgs_population: population_by_condition)
   end
   nil
 end
