@@ -122,8 +122,8 @@ def add_pcgs_pop_to_coins(url)
 
     next unless tr.children.css('td')[3]
 
-    tr.children.css('td')[3..-1].each_with_index do | td, idx | 
-      pop_at_grade = td.css('div').first&.text&.delete(',')&.to_i
+    tr.children.css('td')[3..-2].each_with_index do | td, idx | 
+      pop_at_grade = td.css('div').first&.text&.delete(',')&.to_i || 0
 
       grade = grade_array[idx]
 
