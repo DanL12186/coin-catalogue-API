@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_07_05_173022) do
+ActiveRecord::Schema.define(version: 2020_07_06_221348) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -42,6 +42,7 @@ ActiveRecord::Schema.define(version: 2020_07_05_173022) do
     t.json "pcgs_population", default: {}
     t.string "special_designation", default: "", null: false
     t.index ["denomination", "year", "mintmark", "special_designation"], name: "index_coins_on_denomination_year_mintmark_and_designation", unique: true
+    t.index ["pcgs_num"], name: "index_coins_on_pcgs_num", unique: true
   end
 
   create_table "gold_and_silver_prices", force: :cascade do |t|
