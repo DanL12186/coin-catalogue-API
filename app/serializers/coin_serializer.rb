@@ -9,6 +9,7 @@ class CoinSerializer
              :series,
              :designer,
              :pcgs_population,
+             :price_table,
              :denomination,
              :diameter,
              :metal_composition,
