@@ -8,6 +8,7 @@ end
 # creates coins from PCGS site. designer e.g. "Augustus St. Gauden", category e.g. "Double Eagles", denomination e.g. '$5', '50C'
 def create_coin_series(url, category, designer, generic_img_url, diameter = nil, mass = nil)
   year_and_mintmark_pattern = /^\d{4}(-(CC|C|D|O|S))*/
+  first_year_of_issue = nil
 
   page = scrape_page(url)
 
@@ -22,10 +23,12 @@ def create_coin_series(url, category, designer, generic_img_url, diameter = nil,
       series = page.css('ul.breadcrumb-list li a.text-muted').children[3].text
       pcgs_num, year_mintmark_and_designation, mintage = tr.text.gsub("\r\n", '').strip.split(/\s{2,}/).first(3)
 
-      year_mintmark_and_designation = year_mintmark_and_designation.sub(" #{denomination}", '').sub('G$1', '')
+      year_mintmark_and_designation = year_mintmark_and_designation.sub(" #{denomination}", '').sub(/[TG]\$1/, '')
       #year_and_mintmark_pattern will fail on overdates like 1879/8-CC etc. fix later - possibly .sub('/', " Over ").strip
       year, mintmark      = year_mintmark_and_designation.match(year_and_mintmark_pattern).to_s.split('-')
       special_designation = year_mintmark_and_designation.sub(year_and_mintmark_pattern, '').sub("/", " Over ").strip
+
+      first_year_of_issue ||= year
 
       Coin.create(
                   pcgs_num: pcgs_num.to_i, 
@@ -52,7 +55,8 @@ def create_coin_series(url, category, designer, generic_img_url, diameter = nil,
       generic_img_url: series_coin.generic_img_url,
       mass: series_coin.mass,
       diameter: series_coin.diameter,
-      denomination: series_coin.denomination
+      denomination: series_coin.denomination,
+      date_range: "#{first_year_of_issue}-#{series_coin.year}"
     )
   end
   nil
@@ -114,6 +118,73 @@ def add_pcgs_pop_to_coins(url)
 
     if coin
       coin.update(pcgs_population: population_by_condition)
+    else
+      puts "Couldn't find coin with PCGS ##{pcgs_num}"
+    end
+  end
+  nil
+end
+
+#Penultimate URI resource must be /all; #https://www.pcgs.com/prices/detail/morgan-dollar/744/all/ms
+#default type is MS, as opposed to PL/DMPL/SP
+def add_price_data_to_coins(url, type = 'MS')
+  page = scrape_page(url)
+
+  page.css('tbody tr')[3..-1].each do | tr |
+    row = tr.text.gsub("\r\n",'').gsub(/\s+|Shop|MS|\+/, ' ').strip.split(/\s\s+/)
+
+    next if row[0] == "Total"
+
+    pcgs_num, description = row
+    
+    next unless description && !description.match?(/(PL|PR|SP)$/)
+
+    price_by_condition = { 
+      G04: 0,
+      G06: 0,
+      VG08: 0,
+      VG10: 0,
+      F12:	0,
+      F15: 0,
+      VF20: 0,
+      VF25: 0,
+      VF30: 0,
+      VF35: 0,
+      XF40:	0,
+      XF45: 0,
+      AU50: 0,
+      AU53:	0,
+      AU55: 0,
+      AU58:	0,
+      MS60: 0,
+      MS61:	0, 
+      MS62: 0, 
+      MS63:	0, 
+      MS64: 0, 
+      MS65:	0,
+      MS66: 0, 
+      MS67: 0,
+      MS68: 0, 
+      MS69: 0,
+      MS70: 0,
+    }
+
+    grade_array = price_by_condition.keys
+
+    next unless tr.children.css('td')[3]
+
+      tr.children.css('td')[6..-2].each_with_index do | td, idx | 
+        pop_at_grade = td.css('a').first&.text&.delete(',')&.to_i || 0
+
+        grade = grade_array[idx]
+
+        price_by_condition[grade] = pop_at_grade
+      end
+
+    coin = Coin.find_by(pcgs_num: pcgs_num)
+
+    if coin
+      coin.update(price_table: price_by_condition)
     else
       puts "Couldn't find coin with PCGS ##{pcgs_num}"
     end
