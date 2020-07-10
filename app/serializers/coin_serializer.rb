@@ -15,6 +15,8 @@ class CoinSerializer
              :metal_composition,
              :special_designation,
              :generic_img_url,
+             :next_coin,
+             :prev_coin,
              :mass
 
   attribute :pcgs_total do | coin |

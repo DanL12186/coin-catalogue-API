@@ -174,7 +174,7 @@ def add_price_data_to_coins(url, type = 'MS')
     next unless tr.children.css('td')[3]
 
       tr.children.css('td')[6..-2].each_with_index do | td, idx | 
-        pop_at_grade = td.css('a').first&.text&.delete(',')&.to_i || 0
+        pop_at_grade = td.css('a').first&.text&.delete(',▲▼')&.to_i || 0
 
         grade = grade_array[idx]
 
@@ -191,3 +191,30 @@ def add_price_data_to_coins(url, type = 'MS')
   end
   nil
 end
+
+# def desc(coin)
+#   return nil if coin.nil?
+#   if coin.mintmark
+#     return "#{coin.year}-#{coin.mintmark} #{coin.special_designation}".strip
+#   else
+#     return "#{coin.year} #{coin.special_designation}".strip
+#   end
+# end
+
+# #add previous and next coin properties to coins
+# def add_prev_and_next_to_coins
+#   Coin.transaction do
+#     Coin.distinct(:series).pluck(:series).each do | series |
+
+#       ordered_coins = Coin.select(:year, :mintmark, :special_designation, :id)
+#                           .where(series: series)
+#                           .sort_by { | coin | [coin.year, coin.mintmark || "", coin.special_designation ] }
+          
+#       ordered_coins.each_with_index do | coin, idx |
+#         coin.next_coin = desc(ordered_coins[idx+1])
+#         coin.prev_coin = desc(ordered_coins[idx-1]) || desc(ordered_coins.first)
+#         coin.save
+#       end
+#     end
+#   end
+# end
