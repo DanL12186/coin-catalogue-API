@@ -5,11 +5,11 @@ class MultiCoinSerializer
              :denomination, 
              :mintage, 
              :series, 
-             :special_designation,
-             :estimated_survival_rates
+             :special_designation
 
-  attributes :pcgs_total do | coin |
+  attribute :pcgs_total do | coin |
     coin.pcgs_population['total']
   end
 
+  attribute :survival_estimate, &:estimated_survival_rates
 end
