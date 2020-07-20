@@ -11,7 +11,7 @@ class CoinsController < ApplicationController
     )
 
     if coin
-      render json: CoinSerializer.new(coin).serializable_hash[:data][:attributes]
+      render json: JSON.dump(CoinSerializer.new(coin).serializable_hash[:data][:attributes])
     else
       render status: 404
     end
@@ -26,7 +26,8 @@ class CoinsController < ApplicationController
     if result.empty?
       render status: 404
     else
-      render json: MultiCoinSerializer.new(result).serializable_hash[:data].map! { | coin | coin[:attributes] }
+      coin_hash = MultiCoinSerializer.new(result).serializable_hash[:data].map! { | coin | coin[:attributes] }
+      render json: JSON.generate(coin_hash)
     end
   end
 
