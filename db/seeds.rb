@@ -300,7 +300,7 @@ def desc(coin)
   end
 end
 
-#add previous and next coin properties to coins
+#add previous and next coin properties to all coins
 def add_next_and_prev_to_coins
   Coin.transaction do
     Coin.distinct(:series).pluck(:series).each do | series |
@@ -310,8 +310,8 @@ def add_next_and_prev_to_coins
                           .sort_by { | coin | [coin.year, coin.mintmark || "", coin.special_designation ] }
           
       ordered_coins.each_with_index do | coin, idx |
-        coin.next_coin = desc(ordered_coins[idx+1])
-        coin.prev_coin = desc(ordered_coins[idx-1]) || desc(ordered_coins.first)
+        coin.next_coin = desc(ordered_coins[idx+1]) || desc(ordered_coins.first)
+        coin.prev_coin = desc(ordered_coins[idx-1])
         coin.save
       end
     end
@@ -337,4 +337,5 @@ def update_survival(url)
       coin.update(estimated_survival_rates: { total: RARITY[rarity_all], MS60: RARITY[rarity_ms60], MS65: RARITY[rarity_ms65] })
     end
   end
+  nil
 end
