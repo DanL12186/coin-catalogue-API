@@ -11,7 +11,8 @@ class CoinsController < ApplicationController
     )
 
     if coin
-      render json: JSON.dump(CoinSerializer.new(coin).serializable_hash[:data][:attributes])
+      coin_hash = CoinSerializer.new(coin).serializable_hash
+      render json: JSON.fast_generate(coin_hash[:data][:attributes])
     else
       render status: 404
     end
