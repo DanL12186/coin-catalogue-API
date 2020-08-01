@@ -310,15 +310,19 @@ def add_next_and_prev_to_coins
                           .sort_by { | coin | [coin.year, coin.mintmark || "", coin.special_designation ] }
           
       ordered_coins.each_with_index do | coin, idx |
-        coin.next_coin = desc(ordered_coins[idx+1]) || desc(ordered_coins.first)
-        coin.prev_coin = desc(ordered_coins[idx-1])
+        next_coin = desc(ordered_coins[idx+1]) || desc(ordered_coins.first)
+        prev_coin = desc(ordered_coins[idx-1])
+
+        next if coin.next_coin == next_coin && coin.prev_coin == prev_coin
+
+        coin.next_coin = next_coin
+        coin.prev_coin = prev_coin
+        
         coin.save
       end
     end
   end
 end
-
-
 
 def update_survival(url)
   page = scrape_page(url)
