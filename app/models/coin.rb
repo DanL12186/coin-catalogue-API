@@ -24,16 +24,7 @@ class Coin < ApplicationRecord
     volume = self.mass / coin_density
     thickness = volume / self.surface_area
 
-    return thickness * 10
-    #g/cm^2
-    square_density = Math.cbrt(coin_density) ** 2
-
-    #mass/density/surface_area
-    #(self.mass / self.surface_area / square_density).round(5) or... self.mass / square_density / 20
-
-    #(self.mass / square_density).round(5)
-    #self.surface_area / coin_density / self.mass
-    #self.surface_area / square_density * self.mass    
+    thickness * 100
   end
 
 end
