@@ -1,7 +1,7 @@
 class CoinsController < ApplicationController
 
   def show
-    mintmark = params[:mintmark].upcase unless params[:mintmark].empty?
+    mintmark = params[:mintmark].upcase unless params[:mintmark].blank?
     
     coin = Coin.find_by(
       year: params[:year], 
