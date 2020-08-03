@@ -26,6 +26,16 @@ RSpec.describe CoinsController, type: :controller do
       end
       
     end
+
+    context 'GET #filter_coins' do
+      context 'with empty params' do
+        it 'returns a 404 not found response' do
+          get :filter_coins
+
+          expect(response.status).to eq(404)
+        end
+      end
+    end
   end
 
 end
