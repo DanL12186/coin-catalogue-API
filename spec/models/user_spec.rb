@@ -2,7 +2,13 @@ require 'rails_helper'
 
 RSpec.describe User, type: :model do
 
-  context 'validation tests' do 
+  describe 'validation tests' do 
+    it 'ensures name presence' do
+      user = User.new(name: "", password: "my password")
+      
+      expect(user.save).to eq(false)
+    end
+
     it 'ensures password presence' do
       user = User.new(name: "My Name")
       
