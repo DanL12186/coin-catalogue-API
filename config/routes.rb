@@ -5,4 +5,6 @@ Rails.application.routes.draw do
   get '/series' => 'series#filter_series'
 
   get '/prices' => 'gold_and_silver_prices#prices'
+  post '/login' =>  'sessions#login'
+  post '/signup' => 'users#create'
 end
