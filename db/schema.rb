@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_08_01_034711) do
+ActiveRecord::Schema.define(version: 2020_10_17_171630) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -47,6 +47,12 @@ ActiveRecord::Schema.define(version: 2020_08_01_034711) do
     t.index ["pcgs_num"], name: "index_coins_on_pcgs_num", unique: true
   end
 
+  create_table "coins_wishlists", force: :cascade do |t|
+    t.integer "wishlist_id"
+    t.integer "coin_id"
+    t.string "condition"
+  end
+
   create_table "gold_and_silver_prices", force: :cascade do |t|
     t.float "gold"
     t.float "silver"
@@ -73,6 +79,19 @@ ActiveRecord::Schema.define(version: 2020_08_01_034711) do
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "password_digest"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "wishlists", force: :cascade do |t|
+    t.integer "user_id"
+    t.string "name"
+  end
+
+  create_table "wishlists_coins", force: :cascade do |t|
+    t.integer "wishlist_id"
+    t.integer "coin_id"
+    t.string "condition"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end

@@ -1,6 +1,7 @@
 class Coin < ApplicationRecord
   # belongs_to :designer
   #belongs_to :series
+  has_many :wishlists, through: :wishlists_coins
 
   #g/cm^3
   COPPER_DENSITY = 8.96

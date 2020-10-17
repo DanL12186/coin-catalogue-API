@@ -4,7 +4,7 @@ class User < ApplicationRecord
   validates :name, presence: true, uniqueness: true
   validates :password, length: { minimum: 8 }
 
-  # has_many :wishlists
+  has_many :wishlists
   # has_many :coin_collections
 
   # has_many :wishlist_coins, through: :wishlists, source: :coins
