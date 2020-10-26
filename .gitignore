@@ -27,3 +27,6 @@
 /config/master.key
 
 *.pid
+
+# Ignore application configuration
+/config/application.yml
