@@ -304,8 +304,7 @@ end
 def add_next_and_prev_to_coins
   Coin.transaction do
     Coin.distinct(:series).pluck(:series).each do | series |
-
-      ordered_coins = Coin.select(:year, :mintmark, :special_designation, :id)
+      ordered_coins = Coin.select(:year, :mintmark, :special_designation, :id, :next_coin, :prev_coin)
                           .where(series: series)
                           .sort_by { | coin | [coin.year, coin.mintmark || "", coin.special_designation ] }
           
@@ -314,11 +313,8 @@ def add_next_and_prev_to_coins
         prev_coin = desc(ordered_coins[idx-1])
 
         next if coin.next_coin == next_coin && coin.prev_coin == prev_coin
-
-        coin.next_coin = next_coin
-        coin.prev_coin = prev_coin
         
-        coin.save
+        coin.update(next_coin: next_coin, prev_coin: prev_coin)
       end
     end
   end
@@ -334,7 +330,7 @@ def update_survival(url)
 
   Coin.transaction do
     page.css('tbody tr').each do | tr | 
-      pcgs_num, coin_desc, mintage, rarity_all, rarity_ms60, rarity_ms65 = tr.text.strip.split(/\s{2,}/).first(6)
+      pcgs_num, _coin_desc, mintage, rarity_all, rarity_ms60, rarity_ms65 = tr.text.strip.split(/\s{2,}/).first(6)
  
       coin = Coin.find_by(pcgs_num: pcgs_num)
 
