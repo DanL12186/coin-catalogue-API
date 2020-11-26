@@ -1,6 +1,7 @@
 class CoinSerializer
   include JSONAPI::Serializer
-  attributes :year,
+  attributes :id,
+             :year,
              :mintmark,
              :denomination,
              :category,
@@ -18,6 +19,8 @@ class CoinSerializer
              :next_coin,
              :prev_coin,
              :mass
+
+  attribute :survival_estimate, &:estimated_survival_rates
 
   attribute :pcgs_total do | coin |
     coin.pcgs_population['total']

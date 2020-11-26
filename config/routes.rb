@@ -8,5 +8,6 @@ Rails.application.routes.draw do
   post '/login' =>  'sessions#login'
   post '/signup' => 'users#create'
 
-  get '/wishlists' => 'wishlists#index'
+  resources :wishlists, only: [:index, :show, :update, :create]
+  post '/wishlists/:id/add_coin', to: 'wishlists#add_coin'
 end
